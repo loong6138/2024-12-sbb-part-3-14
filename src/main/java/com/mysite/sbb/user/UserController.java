@@ -34,11 +34,11 @@ public class UserController {
             userService.create(userCreateForm.getUsername(), userCreateForm.getEmail(), userCreateForm.getPassword1());
         } catch (DataIntegrityViolationException e) { // 중복 예외 발생 시
             e.printStackTrace();
-            bindingResult.rejectValue("signupFailed", "이미 등록된 사용자입니다.");
+            bindingResult.reject("signupFailed", "이미 등록된 사용자입니다.");
             return "signup_form";
         } catch (Exception e) { // 그외 나머지 예외 발생 시
             e.printStackTrace();
-            bindingResult.rejectValue("signupFailed", e.getMessage());
+            bindingResult.reject("signupFailed", e.getMessage());
         }
         return "redirect:/";
     }

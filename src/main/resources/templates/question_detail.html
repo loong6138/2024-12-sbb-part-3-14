@@ -31,6 +31,40 @@
                    class="delete btn btn-sm btn-outline-secondary" sec:authorize="isAuthenticated()"
                    th:if="${question.author != null and #authentication.getPrincipal().getUsername() == question.author.username}"
                    th:text="삭제"></a>
+                <!-- 댓글 작성 버튼 -->
+                <a href="javascript:void(0);" class="comment-toggle btn btn-sm btn-outline-secondary">댓글 작성</a>
+                <!-- 댓글 작성 폼 -->
+                <div class="comment-form mt-2" style="display: none;">
+                    <form th:action="@{|/comment/create/question/${question.id}|}" method="post">
+                        <textarea name="content" class="comment-content form-control mb-2" rows="3"
+                                  placeholder="댓글을 입력하세요"></textarea>
+                        <button type="submit" class="btn btn-sm btn-primary">댓글 등록</button>
+                    </form>
+                </div>
+            </div>
+            <!-- 댓글 갯수 표시, 없을 경우 미표시 -->
+            <h10 class=" my-1 py-1"
+                 th:if="${#lists.size(question.commentList) > 0}"
+                 th:text="|댓글 ${#lists.size(question.commentList)}|"></h10>
+            <!-- 댓글 리스트 -->
+            <div class="card my-3" th:if="${!#lists.isEmpty(question.commentList)}">
+                <div class="card-body">
+                    <div th:each="comment : ${question.commentList}" class="comment py-2 text-muted">
+                        <span style="white-space: normal;"
+                              th:utext="${@commonUtil.markdown(comment.getContent())}"></span>
+                        <span class="text-muted"
+                              th:text="| - ${comment.author.username}, ${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}|"></span>
+                        <!-- 댓글 수정 및 삭제 -->
+                        <a th:href="@{|/comment/modify/${comment.id}|}" class="btn btn-sm btn-outline-secondary"
+                           sec:authorize="isAuthenticated()"
+                           th:if="${comment.author != null and #authentication.getPrincipal().getUsername() == comment.author.username}"
+                           th:text="수정"></a>
+                        <a href="javascript:void(0);" th:data-uri="@{|/comment/delete/${comment.id}|}"
+                           class="delete btn btn-sm btn-outline-secondary" sec:authorize="isAuthenticated()"
+                           th:if="${comment.author != null and #authentication.getPrincipal().getUsername() == comment.author.username}"
+                           th:text="삭제"></a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -68,15 +102,62 @@
                    class="delete btn btn-sm btn-outline-secondary" sec:authorize="isAuthenticated()"
                    th:if="${answer.author != null and #authentication.getPrincipal().getUsername() == answer.author.username}"
                    th:text="삭제"></a>
+                <!-- 댓글 작성 버튼 -->
+                <a href="javascript:void(0);" class="comment-toggle btn btn-sm btn-outline-secondary">댓글 작성</a>
+                <!-- 댓글 작성 폼 -->
+                <div class="comment-form mt-2" style="display: none;">
+                    <form th:action="@{|/comment/create/answer/${answer.id}|}" method="post">
+                        <textarea name="content" class="comment-content form-control mb-2" rows="3"
+                                  placeholder="댓글을 입력하세요"></textarea>
+                        <button type="submit" class="btn btn-sm btn-primary">댓글 등록</button>
+                    </form>
+                </div>
+            </div>
+            <!-- 댓글 갯수 표시, 없을 경우 미표시 -->
+            <h10 class=" my-1 py-1"
+                th:if="${#lists.size(answer.commentList) > 0}"
+                th:text="|댓글 ${#lists.size(answer.commentList)}|"></h10>
+            <!-- 댓글 리스트 -->
+            <div class="card my-3" th:if="${!#lists.isEmpty(answer.commentList)}">
+                <div class="card-body">
+                    <div th:each="comment : ${answer.commentList}" class="comment py-2 text-muted">
+                        <span style="white-space: normal;"
+                              th:utext="${@commonUtil.markdown(comment.getContent())}"></span>
+                        <span class="text-muted"
+                              th:text="| - ${answer.author.username}, ${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}|"></span>
+                        <!-- 댓글 수정 및 삭제 -->
+                        <a th:href="@{|/comment/modify/${comment.id}|}" class="btn btn-sm btn-outline-secondary"
+                           sec:authorize="isAuthenticated()"
+                           th:if="${comment.author != null and #authentication.getPrincipal().getUsername() == comment.author.username}"
+                           th:text="수정"></a>
+                        <a href="javascript:void(0);" th:data-uri="@{|/comment/delete/${comment.id}|}"
+                           class="delete btn btn-sm btn-outline-secondary" sec:authorize="isAuthenticated()"
+                           th:if="${comment.author != null and #authentication.getPrincipal().getUsername() == comment.author.username}"
+                           th:text="삭제"></a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <!-- 답변 반복 끝  -->
+    <!-- 답변 작성 -->
+    <form th:action="@{|/answer/create/${question.id}|}" th:object="${answerForm}" method="post"
+          class="my-3">
+        <div th:replace="~{form_errors :: formErrorsFragment}"></div>
+        <textarea sec:authorize="isAnonymous()" disabled th:field="*{content}" class="form-control"
+                  rows="10"></textarea>
+        <textarea sec:authorize="isAuthenticated()" th:field="*{content}" class="form-control"
+                  rows="4"></textarea>
+        <div class="d-flex justify-content-end">
+            <input type="submit" value="답변 등록" class="btn btn-primary my-2">
+        </div>
+    </form>
     <!-- 답변 페이징 처리 시작 -->
     <div th:if="${!answerPaging.isEmpty()}">
         <ul class="pagination justify-content-center">
             <li class="page-item" th:classappend="${!answerPaging.hasPrevious()} ? 'disabled'">
-                <a class="page-link" th:href="@{|?ans_page=${answerPaging.number-1}|}" th:data-page="${answerPaging.number-1}">
+                <a class="page-link" th:href="@{|?ans_page=${answerPaging.number-1}|}"
+                   th:data-page="${answerPaging.number-1}">
                     <span>이전</span>
                 </a>
             </li>
@@ -84,31 +165,27 @@
                 th:if="${page >= answerPaging.number-5 and page <= answerPaging.number+5}"
                 th:classappend="${page == answerPaging.number} ? 'active'"
                 class="page-item">
-                <a th:text="${page}" class="page-link" th:href="@{|?ans_page=${page}|}" th:data-page="${page}"></a>
+                <a th:text="${page}" class="page-link" th:href="@{|?ans_page=${page}|}"
+                   th:data-page="${page}"></a>
             </li>
             <li class="page-item" th:classappend="${!answerPaging.hasNext()} ? 'disabled'">
-                <a class="page-link" th:href="@{|?ans_page=${answerPaging.number+1}|}" th:data-page="${answerPaging.number+1}">
+                <a class="page-link" th:href="@{|?ans_page=${answerPaging.number+1}|}"
+                   th:data-page="${answerPaging.number+1}">
                     <span>다음</span>
                 </a>
             </li>
         </ul>
     </div>
-    <!-- 답변 작성 -->
-    <form th:action="@{|/answer/create/${question.id}|}" th:object="${answerForm}" method="post" class="my-3">
-        <div th:replace="~{form_errors :: formErrorsFragment}"></div>
-        <textarea sec:authorize="isAnonymous()" disabled th:field="*{content}" class="form-control"
-                  rows="10"></textarea>
-        <textarea sec:authorize="isAuthenticated()" th:field="*{content}" class="form-control" rows="4"></textarea>
-        <input type="submit" value="답변 등록" class="btn btn-primary my-2">
-    </form>
 </div>
+<!-- 답변 페이징 처리 종료 -->
 <script layout:fragment="script" type='text/javascript'>
     const delete_elements = document.getElementsByClassName("delete");
     Array.from(delete_elements).forEach(function (element) {
         element.addEventListener('click', function () {
             if (confirm("정말로 삭제하시겠습니까?")) {
                 location.href = this.dataset.uri;
-            };
+            }
+            ;
         });
     });
     const recommend_elements = document.getElementsByClassName("recommend");
@@ -118,6 +195,25 @@
                 location.href = this.dataset.uri;
             }
             ;
+        });
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        // 모든 댓글 작성 링크에 이벤트 추가
+        const commentToggleLinks = document.querySelectorAll(".comment-toggle");
+
+        commentToggleLinks.forEach(function (link) {
+            link.addEventListener("click", function () {
+                // 링크 바로 다음에 있는 댓글 폼을 찾음
+                const commentForm = this.nextElementSibling;
+
+                // 댓글 폼 토글
+                if (commentForm.style.display === "none" || commentForm.style.display === "") {
+                    commentForm.style.display = "block";
+                } else {
+                    commentForm.style.display = "none";
+                }
+                ;
+            });
         });
     });
 </script>
